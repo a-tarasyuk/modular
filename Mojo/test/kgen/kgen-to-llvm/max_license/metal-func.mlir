@@ -9,9 +9,12 @@ module attributes {M.target_info = #M.target<triple = "air64-apple-macosx", arch
   // CHECK-MLIR: llvm.func @air.thread_position_in_threadgroup.x() -> i32
 
   // CHECK-MLIR-LABEL: @test0{{.*}}"metal.kernel", "true"
+  // CHECK-MLIR-NEXT: %{{.*}} = llvm.call @air.thread_position_in_threadgroup.x() : () -> i32
+  // CHECK-MLIR-NEXT: llvm.return
+  // CHECK-MLIR-NEXT: }
   kgen.func export @test0() {
+    debuginfo.line_table_loc loc("test.mojo":1:1)
     %struct = kgen.param.constant: struct<()> = <{  }>
-    // CHECK-MLIR: llvm.call @air.thread_position_in_threadgroup.x() : () -> i32
     %3 = pop.call_llvm_intrinsic side_effecting<0> "llvm.air.thread_position_in_threadgroup.x", (%struct) : (!kgen.struct<()>) -> !kgen.scalar<ui32>
     hlcf.return
   }
@@ -45,6 +48,9 @@ module attributes {M.target_info = #M.target<triple = "air64-apple-macosx", arch
 
   // CHECK-LLVMIR: declare void @air.wg.barrier(i32, i32) #[[BARRIER:[0-9]+]]
   // CHECK-LLVMIR: define{{.*}}@test0() #[[KERNEL:[0-9]+]]
+  // CHECK-LLVMIR-NEXT: %{{.*}} = call i32 @air.thread_position_in_threadgroup.x()
+  // CHECK-LLVMIR-NEXT: ret void
+  // CHECK-LLVMIR-NEXT: }
   // CHECK-LLVMIR: attributes #[[BARRIER]] = { convergent }
   // CHECK-LLVMIR: attributes #[[KERNEL]] = {{.*}}"metal.kernel"="true"{{.*}}
 }

@@ -28,6 +28,7 @@
 #include "Mojo/POPDialect/POPTypes.h"
 #include "Mojo/ToolCommon/CompilationOptions.h"
 #include "Support/Compiler/MLIRDType.h"
+#include "Support/DebugInfoDialect/Transforms/Passes.h"
 #include "Support/Error.h"
 #include "Support/ErrorOr.h"
 #include "mlir/Dialect/LLVMIR/LLVMDialect.h"
@@ -37,6 +38,7 @@
 #include "mlir/IR/Operation.h"
 #include "mlir/IR/PatternMatch.h"
 #include "mlir/IR/SymbolTable.h"
+#include "mlir/Pass/PassManager.h"
 #include "mlir/Transforms/DialectConversion.h"
 #include "llvm/ADT/STLExtras.h"
 #include "llvm/ADT/SmallVector.h"
@@ -1048,6 +1050,10 @@ public:
 class MetalLowering final : public TargetLowering {
 public:
   const TargetTraits *traits() const override { return &MetalTraits::get(); }
+
+  void addPostLowerToLLVMPasses(mlir::OpPassManager &pm) const override {
+    pm.addPass(DebugInfo::createDebugInfoStrip());
+  }
 
   mlir::Type lowerKernelArgToMemory(mlir::Type type) const override {
     return lowerAggregateArgToMemory(type);
